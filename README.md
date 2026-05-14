@@ -93,7 +93,76 @@ The goal of the project is to demonstrate how modern AI-enabled backend systems 
 
 # Full System Architecture
 
-text                          ┌───────────────────────┐                          │       Frontend        │                          │  Recruiter Interface  │                          └──────────┬────────────┘                                     │                                     ▼                       ┌──────────────────────────┐                      │     FastAPI Backend      │                      │  Streaming SSE Endpoint  │                      └──────────┬───────────────┘                                 │                                 ▼                      ┌───────────────────────────┐                     │     LangGraph Workflow    │                     └──────────┬────────────────┘                                │          ┌──────────────────────┼─────────────────────────┐         │                      │                         │         ▼                      ▼                         ▼  ┌────────────────┐   ┌──────────────────┐   ┌──────────────────┐ │ Input Guardrail│   │ Intent Detection │   │ Conversation Mem │ │                │   │                  │   │ Redis-backed     │ │ - Jailbreak    │   │ - Query Rewrite  │   │ Multi-turn state │ │ - Prompt Inject│   │ - Intent Class   │   │                  │ │ - Scope Check  │   │ - Entity Tracking│   │                  │ └────────────────┘   └──────────────────┘   └──────────────────┘                                │                                ▼                      ┌────────────────────┐                     │ Query Rewriting    │                     └─────────┬──────────┘                               │                ┌───────────────┴────────────────┐               │                                │               ▼                                ▼     ┌────────────────────┐         ┌────────────────────┐    │ Qdrant Vector Search│         │ BM25 Retrieval     │    │ Semantic Retrieval  │         │ Sparse Retrieval   │    └──────────┬──────────┘         └──────────┬─────────┘               │                               │               └──────────────┬────────────────┘                              ▼                   ┌─────────────────────┐                  │ Hybrid Rank Fusion  │                  └──────────┬──────────┘                             ▼                ┌────────────────────────────┐               │ Intent-Aware Source Boost  │               └──────────┬─────────────────┘                          ▼                  ┌─────────────────────┐                 │ Cross-Encoder       │                 │ Reranking           │                 └──────────┬──────────┘                            ▼                   ┌────────────────────┐                  │ Prompt Construction│                  └──────────┬─────────┘                             ▼                    ┌───────────────────┐                   │ OpenAI LLM Stream │                   └──────────┬────────┘                              ▼                   ┌────────────────────┐                  │ Output Guardrails  │                  └──────────┬─────────┘                             ▼                   ┌────────────────────┐                  │ SSE Token Streaming│                  └────────────────────┘ 
+## Full System Architecture
+
+```text
+┌────────────────────────┐
+│        Frontend        │
+│   Recruiter Interface  │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│     FastAPI Backend    │
+│  Streaming SSE Endpoint│
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│   LangGraph Workflow   │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────────────────────────┐
+│ Input Guardrails                           │
+│ - Jailbreak / prompt injection checks      │
+│ - Scope validation                         │
+│ - Known-entity protection                  │
+└───────────┬────────────────────────────────┘
+            │
+            ▼
+┌────────────────────────────────────────────┐
+│ Conversation Understanding                 │
+│ - Intent classification                    │
+│ - Query rewriting                          │
+│ - Active entity/topic tracking             │
+│ - Redis-backed conversation memory         │
+└───────────┬────────────────────────────────┘
+            │
+            ├───────────────────────────────┐
+            ▼                               ▼
+┌────────────────────────┐        ┌────────────────────────┐
+│ Calendar Workflow      │        │ RAG Retrieval Pipeline │
+│ - Availability lookup  │        │ - Qdrant vector search │
+│ - Slot selection       │        │ - BM25 keyword search  │
+│ - Event creation       │        │ - Hybrid rank fusion   │
+└───────────┬────────────┘        └───────────┬────────────┘
+            │                                 │
+            ▼                                 ▼
+┌────────────────────────┐        ┌────────────────────────┐
+│ Google Calendar API    │        │ Cross-Encoder Rerank   │
+└────────────────────────┘        └───────────┬────────────┘
+                                                │
+                                                ▼
+                                    ┌────────────────────────┐
+                                    │ Prompt Construction    │
+                                    └───────────┬────────────┘
+                                                │
+                                                ▼
+                                    ┌────────────────────────┐
+                                    │ OpenAI Streaming LLM   │
+                                    └───────────┬────────────┘
+                                                │
+                                                ▼
+                                    ┌────────────────────────┐
+                                    │ Output Guardrails      │
+                                    └───────────┬────────────┘
+                                                │
+                                                ▼
+                                    ┌────────────────────────┐
+                                    │ SSE Token Streaming    │
+                                    └────────────────────────┘
+```
 
 ---
 
@@ -114,7 +183,69 @@ Instead of relying purely on vector similarity search, the system combines multi
 
 # Retrieval Pipeline Overview
 
-text User Query    │    ▼ Input Guardrails    │    ▼ Intent Understanding    │    ▼ Question Rewriting    │    ▼ Hybrid Retrieval    ├── Dense Vector Search (Qdrant)    └── Sparse BM25 Retrieval    │    ▼ Reciprocal Rank Fusion    │    ▼ Intent-Aware Source Boosting    │    ▼ Cross-Encoder Reranking    │    ▼ Context Selection    │    ▼ Prompt Construction    │    ▼ Streaming LLM Response 
+```text
+┌────────────────────────┐
+│       User Query       │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│    Input Guardrails    │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│ Intent Understanding   │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│  Question Rewriting    │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│   Hybrid Retrieval     │
+└───────┬────────┬───────┘
+        │        │
+        ▼        ▼
+┌──────────────┐ ┌──────────────┐
+│ Dense Vector │ │ Sparse BM25 │
+│ Search       │ │ Retrieval    │
+│ (Qdrant)     │ │              │
+└───────┬──────┘ └──────┬───────┘
+        │               │
+        └──────┬────────┘
+               ▼
+┌────────────────────────┐
+│ Reciprocal Rank Fusion │
+└───────────┬────────────┘
+            │
+            ▼
+┌──────────────────────────────┐
+│ Intent-Aware Source Boosting │
+└───────────┬──────────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│ Cross-Encoder Rerank   │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│   Context Selection    │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│  Prompt Construction   │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│ Streaming LLM Response │
+└────────────────────────┘
+```
 
 ---
 
