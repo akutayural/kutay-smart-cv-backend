@@ -13,10 +13,22 @@ class CalendarClient:
         self._client = None
 
     def _load_credentials(self) -> Credentials:
-        credentials = Credentials.from_authorized_user_file(
-            Path(self.settings.google_calendar_token_path),
-            self.settings.google_calendar_scopes,
-        )
+        scopes = self.settings.google_calendar_scopes or [
+            "https://www.googleapis.com/auth/calendar",
+        ]
+
+        if self.settings.google_calendar_token_json:
+            credentials = Credentials.from_authorized_user_info(
+                self.settings.google_calendar_token_json,
+                scopes,
+            )
+        elif self.settings.google_calendar_token_path:
+            credentials = Credentials.from_authorized_user_file(
+                Path(self.settings.google_calendar_token_path),
+                scopes,
+            )
+        else:
+            raise RuntimeError("Google Calendar credentials are not configured.")
 
         if credentials.expired and credentials.refresh_token:
             credentials.refresh(Request())

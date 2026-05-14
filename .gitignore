@@ -30,6 +30,7 @@ wheels/
 
 # Google Calendar local OAuth secrets
 credentials.json
+credentials-prod.json
 token.json
 *.credentials.json
 *.token.json

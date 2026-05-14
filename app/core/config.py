@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     calendar_timezone: str = "Europe/London"
     calendar_workday_start_hour: int = 9
     calendar_workday_end_hour: int = 18
+    google_calendar_token_json: dict | None = None
+    google_calendar_credentials_json: dict | None = None
 
     @property
     def allowed_origins_list(self) -> list[str]:
