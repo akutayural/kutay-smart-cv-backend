@@ -15,8 +15,84 @@ Designed to simulate a real-world AI backend platform focused on:
 
 # Live Demo
 Try the live demo: https://kutayural.com
+Frontend repository: https://github.com/akutayural/kutay-smart-cv-fe
 
 ---
+
+# Full System Architecture
+
+```text
+┌────────────────────────┐
+│        Frontend        │
+│   Recruiter Interface  │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│     FastAPI Backend    │
+│  Streaming SSE Endpoint│
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│   LangGraph Workflow   │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────────────────────────┐
+│ Input Guardrails                           │
+│ - Jailbreak / prompt injection checks      │
+│ - Scope validation                         │
+│ - Known-entity protection                  │
+└───────────┬────────────────────────────────┘
+            │
+            ▼
+┌────────────────────────────────────────────┐
+│ Conversation Understanding                 │
+│ - Intent classification                    │
+│ - Query rewriting                          │
+│ - Active entity/topic tracking             │
+│ - Redis-backed conversation memory         │
+└───────────┬────────────────────────────────┘
+            │
+            ├───────────────────────────────┐
+            ▼                               ▼
+┌────────────────────────┐        ┌────────────────────────┐
+│ Calendar Workflow      │        │ RAG Retrieval Pipeline │
+│ - Availability lookup  │        │ - Qdrant vector search │
+│ - Slot selection       │        │ - BM25 keyword search  │
+│ - Event creation       │        │ - Hybrid rank fusion   │
+└───────────┬────────────┘        └───────────┬────────────┘
+            │                                 │
+            ▼                                 ▼
+┌────────────────────────┐        ┌────────────────────────┐
+│ Google Calendar API    │        │ Cross-Encoder Rerank   │
+└────────────────────────┘        └───────────┬────────────┘
+                                                │
+                                                ▼
+                                    ┌────────────────────────┐
+                                    │ Prompt Construction    │
+                                    └───────────┬────────────┘
+                                                │
+                                                ▼
+                                    ┌────────────────────────┐
+                                    │ OpenAI Streaming LLM   │
+                                    └───────────┬────────────┘
+                                                │
+                                                ▼
+                                    ┌────────────────────────┐
+                                    │ Output Guardrails      │
+                                    └───────────┬────────────┘
+                                                │
+                                                ▼
+                                    ┌────────────────────────┐
+                                    │ SSE Token Streaming    │
+                                    └────────────────────────┘
+```
+
+---
+
+
 # Overview
 
 Kutay Smart CV AI is an AI-powered backend system that allows recruiters, hiring managers, and engineers to interact conversationally with a structured professional knowledge base.
@@ -88,81 +164,6 @@ The goal of the project is to demonstrate how modern AI-enabled backend systems 
 - Retrieval timing instrumentation
 - Structured event logging
 - Error tracking
-
----
-
-# Full System Architecture
-
-## Full System Architecture
-
-```text
-┌────────────────────────┐
-│        Frontend        │
-│   Recruiter Interface  │
-└───────────┬────────────┘
-            │
-            ▼
-┌────────────────────────┐
-│     FastAPI Backend    │
-│  Streaming SSE Endpoint│
-└───────────┬────────────┘
-            │
-            ▼
-┌────────────────────────┐
-│   LangGraph Workflow   │
-└───────────┬────────────┘
-            │
-            ▼
-┌────────────────────────────────────────────┐
-│ Input Guardrails                           │
-│ - Jailbreak / prompt injection checks      │
-│ - Scope validation                         │
-│ - Known-entity protection                  │
-└───────────┬────────────────────────────────┘
-            │
-            ▼
-┌────────────────────────────────────────────┐
-│ Conversation Understanding                 │
-│ - Intent classification                    │
-│ - Query rewriting                          │
-│ - Active entity/topic tracking             │
-│ - Redis-backed conversation memory         │
-└───────────┬────────────────────────────────┘
-            │
-            ├───────────────────────────────┐
-            ▼                               ▼
-┌────────────────────────┐        ┌────────────────────────┐
-│ Calendar Workflow      │        │ RAG Retrieval Pipeline │
-│ - Availability lookup  │        │ - Qdrant vector search │
-│ - Slot selection       │        │ - BM25 keyword search  │
-│ - Event creation       │        │ - Hybrid rank fusion   │
-└───────────┬────────────┘        └───────────┬────────────┘
-            │                                 │
-            ▼                                 ▼
-┌────────────────────────┐        ┌────────────────────────┐
-│ Google Calendar API    │        │ Cross-Encoder Rerank   │
-└────────────────────────┘        └───────────┬────────────┘
-                                                │
-                                                ▼
-                                    ┌────────────────────────┐
-                                    │ Prompt Construction    │
-                                    └───────────┬────────────┘
-                                                │
-                                                ▼
-                                    ┌────────────────────────┐
-                                    │ OpenAI Streaming LLM   │
-                                    └───────────┬────────────┘
-                                                │
-                                                ▼
-                                    ┌────────────────────────┐
-                                    │ Output Guardrails      │
-                                    └───────────┬────────────┘
-                                                │
-                                                ▼
-                                    ┌────────────────────────┐
-                                    │ SSE Token Streaming    │
-                                    └────────────────────────┘
-```
 
 ---
 
@@ -302,7 +303,12 @@ Natural conversational questions are rewritten into retrieval-optimized semantic
 
 Example:
 
-text Original: "What fintech stuff has he worked on?"  Rewritten: "What fintech systems and payment infrastructure projects has Ahmet Kutay Ural worked on?" 
+```text
+Original:
+"What fintech stuff has he worked on?"
+Rewritten:
+"What fintech systems and payment infrastructure projects has Ahmet Kutay Ural worked on?" 
+```
 
 This improves:
 - embedding quality
@@ -476,7 +482,47 @@ Scheduling is implemented as a dedicated LangGraph conversational flow.
 
 # Scheduling Flow
 
-text User Request    │    ▼ Intent Detection    │    ▼ Availability Workflow    │    ▼ Calendar Availability Query    │    ▼ Candidate Slot Generation    │    ▼ User Confirmation    │    ▼ Meeting Creation    │    ▼ Google Calendar Event 
+```text
+┌────────────────────────┐
+│      User Request      │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│    Intent Detection    │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│ Availability Workflow  │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│ Calendar Availability  │
+│        Query           │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│ Candidate Slot Gen     │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│   User Confirmation    │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│    Meeting Creation    │
+└───────────┬────────────┘
+            │
+            ▼
+┌────────────────────────┐
+│ Google Calendar Event  │
+└────────────────────────┘
+```
 
 ---
 
@@ -534,12 +580,22 @@ Measures:
 
 Run evaluations:
 
-bash make eval 
+```bash
+make eval
+``` 
 
 Example output:
 
-text FINAL RESULTS Hit Rate: 1.0 MRR: 1.0  FINAL ANSWER EVAL Pass Rate: 1.0 
+```text
+FINAL RESULTS
 
+Hit Rate: 1.0 
+MRR: 1.0
+
+FINAL ANSWER EVAL
+
+Pass Rate: 1.0 
+```
 ---
 
 # Observability
@@ -559,7 +615,14 @@ Tracked metrics include:
 
 Example logs:
 
-text embedding_query_timing qdrant_query_timing rerank_timing retrieval_pipeline_completed llm_token_usage chat_workflow_completed 
+```text 
+embedding_query_timing
+qdrant_query_timing
+rerank_timing
+retrieval_pipeline_completed
+llm_token_usage
+chat_workflow_completed
+``` 
 
 ---
 
@@ -600,7 +663,21 @@ text embedding_query_timing qdrant_query_timing rerank_timing retrieval_pipeline
 
 # Project Structure
 
-text app/   ai/     evals/     guardrails/     rag/     workflows/    api/   core/   integrations/   observability/   schemas/   services/  tests/ 
+```text
+app/
+├── ai/
+├── api/
+├── core/
+├── evals/
+├── guardrails/
+├── integrations/
+├── observability/
+├── rag/
+├── schemas/
+├── services/
+├── workflows/
+└── tests/
+```
 
 ---
 
@@ -617,37 +694,53 @@ text app/   ai/     evals/     guardrails/     rag/     workflows/    api/   cor
 
 Create a .env file:
 
-env OPENAI_API_KEY=your_key_here 
+```bash
+OPENAI_API_KEY=your_key_here 
+```
+
+Set the OPENAI_API_KEY environment variable to enable LLM functionality.
 
 ---
 
 # Install Dependencies
 
-bash uv sync 
+```bash
+uv sync 
+```
 
 ---
 
 # Start Infrastructure
 
-bash docker compose up -d 
+```bash
+docker compose up -d 
+```
 
 ---
 
 # Ingest Knowledge Base
 
-bash make ingest 
+```bash
+make ingest 
+```
 
 ---
 
 # Run API
 
-bash make run 
+```bash
+make run 
+```
 
 API:
-text http://localhost:8000 
+```text 
+http://localhost:8000 
+```
 
 Swagger:
-text http://localhost:8000/docs 
+```text
+http://localhost:8000/docs 
+```
 
 ---
 
@@ -655,7 +748,10 @@ text http://localhost:8000/docs
 
 Run full stack:
 
-bash make docker 
+
+```bash
+make docker 
+```
 
 ---
 
@@ -663,12 +759,17 @@ bash make docker
 
 ## Streaming Chat Endpoint
 
-http POST /api/v1/chat/stream 
+```http
+POST /api/v1/chat/stream 
+```
 
 Request:
 
-json {   "message": "What fintech systems has Kutay built?" } 
-
+```json
+{   
+  "message": "What fintech systems has Kutay built?"
+} 
+```
 ---
 
 # Example Questions
