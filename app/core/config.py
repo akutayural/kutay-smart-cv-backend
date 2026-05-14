@@ -36,12 +36,12 @@ class Settings(BaseSettings):
     conversation_ttl_seconds: int = 3600
 
     # Calendar tool settings
-    google_calendar_token_path: str
-    google_calendar_credentials_path: str
-    google_calendar_scopes: list[str]
-    calendar_timezone: str
-    calendar_workday_start_hour: int
-    calendar_workday_end_hour: int
+    google_calendar_token_path: str | None = None
+    google_calendar_credentials_path: str | None = None
+    google_calendar_scopes: list[str] = []
+    calendar_timezone: str = "Europe/London"
+    calendar_workday_start_hour: int = 9
+    calendar_workday_end_hour: int = 18
 
     @property
     def allowed_origins_list(self) -> list[str]:
