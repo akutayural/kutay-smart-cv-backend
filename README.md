@@ -15,6 +15,7 @@ Designed to simulate a real-world AI backend platform focused on:
 
 # Live Demo
 Try the live demo: https://kutayural.com
+
 Frontend repository: https://github.com/akutayural/kutay-smart-cv-fe
 
 ---
@@ -211,7 +212,7 @@ Instead of relying purely on vector similarity search, the system combines multi
         │        │
         ▼        ▼
 ┌──────────────┐ ┌──────────────┐
-│ Dense Vector │ │ Sparse BM25 │
+│ Dense Vector │ │ Sparse BM25  │
 │ Search       │ │ Retrieval    │
 │ (Qdrant)     │ │              │
 └───────┬──────┘ └──────┬───────┘
