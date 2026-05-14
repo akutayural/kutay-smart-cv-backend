@@ -1,0 +1,45 @@
+[project]
+name = "cv-ai-backend"
+version = "0.1.0"
+description = "Secure RAG backend for Ahmet Kutay Ural Smart CV"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "pydantic-settings>=2.5.0",
+    "python-dotenv>=1.0.1",
+    "openai>=1.50.0",
+    "langchain>=0.3.0",
+    "langchain-openai>=0.2.0",
+    "langchain-qdrant>=0.2.0",
+    "langgraph>=0.2.0",
+    "qdrant-client>=1.11.0",
+    "slowapi>=0.1.9",
+    "langchain-text-splitters>=1.1.2",
+    "sqlalchemy>=2.0.49",
+    "structlog>=25.5.0",
+    "redis>=7.4.0",
+    "pyyaml>=6.0.3",
+    "rank-bm25>=0.2.2",
+    "google-api-python-client>=2.196.0",
+    "google-auth>=2.52.0",
+    "google-auth-oauthlib>=1.4.0",
+    "google-auth-httplib2>=0.4.0",
+    "mcp>=1.27.1",
+    "email-validator>=2.3.0",
+    "apiexception>=0.2.3",
+    "prometheus-client>=0.25.0",
+]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.6.0",
+    "pytest>=8.3.0",
+    "httpx>=0.27.0",
+    "pytest-asyncio>=1.3.0",
+]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: marks tests as integration tests",
+]
