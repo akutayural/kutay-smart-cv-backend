@@ -1,6 +1,8 @@
+import json
 import time
 
 from langgraph.graph import END, StateGraph
+from openai import AsyncOpenAI
 
 from app.core.config import get_settings
 from app.core.exceptions import UpstreamError
@@ -14,6 +16,7 @@ from app.ai.workflows.chat.nodes.calendar_confirmation import calendar_confirmat
 from app.ai.workflows.chat.nodes.calendar_scheduling import calendar_scheduling_node
 from app.ai.workflows.chat.state import ChatState
 from app.observability import track_error, track_event, track_timing
+from app.ai.workflows.chat.prompts import MEETING_FLOW_DECISION_PROMPT
 
 logger = get_logger(__name__)
 
@@ -40,6 +43,7 @@ def build_initial_state(question: str) -> ChatState:
         "meeting_requested_end": None,
         "meeting_candidate_slots": [],
         "meeting_selected_slot": None,
+        "meeting_flow_decision": None,
     }
 
 
@@ -93,6 +97,18 @@ async def understanding_node(state: ChatState) -> ChatState:
             active_entity=state.get("active_entity"),
         )
 
+    meeting_flow_decision = None
+
+    if _has_active_meeting_flow(state):
+        meeting_flow_decision = (
+            await classify_meeting_flow_decision(state)
+        )
+
+        logger.info(
+            "meeting_flow_decision_completed",
+            decision=meeting_flow_decision,
+        )
+
     logger.info(
         "conversation_understanding_completed",
         allowed=result["allowed"],
@@ -101,23 +117,30 @@ async def understanding_node(state: ChatState) -> ChatState:
         active_entity=result.get("active_entity"),
     )
 
-    return {
+    next_state = {
         **state,
         "allowed": result["allowed"],
         "refusal_reason": result.get("reason"),
         "intent": result["intent"],
         "rewritten_question": result.get("rewritten_question"),
 
-        # IMPORTANT:
-        # Keep previous active entity if LLM returns null
         "active_entity": (
-            result.get("active_entity")
-            or state.get("active_entity")
+                result.get("active_entity")
+                or state.get("active_entity")
         ),
 
         "answer": "" if result["allowed"] else result.get("reason"),
         "stream_ready": False,
+        "meeting_flow_decision": meeting_flow_decision,
     }
+
+    if meeting_flow_decision in {
+        "cancel_scheduling",
+        "switch_topic",
+    }:
+        next_state = _reset_meeting_state(next_state)
+
+    return next_state
 
 
 def route_after_input_guard(state: ChatState) -> str:
@@ -140,14 +163,89 @@ def _has_active_meeting_flow(state: ChatState) -> bool:
     )
 
 
+async def classify_meeting_flow_decision(
+    state: ChatState,
+) -> str:
+    settings = get_settings()
+
+    client = AsyncOpenAI(
+        api_key=settings.openai_api_key,
+    )
+
+    try:
+        response = await client.chat.completions.create(
+            model=settings.scope_classifier_model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": MEETING_FLOW_DECISION_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": state["question"],
+                },
+            ],
+            temperature=0,
+            max_tokens=20,
+            response_format={"type": "json_object"},
+        )
+
+        raw = response.choices[0].message.content or "{}"
+
+        decision = json.loads(raw).get("decision")
+
+        if decision in {
+            "continue_scheduling",
+            "cancel_scheduling",
+            "switch_topic",
+        }:
+            return decision
+
+    except Exception as exc:
+        logger.exception(
+            "meeting_flow_decision_failed",
+            error_type=type(exc).__name__,
+        )
+
+    return "continue_scheduling"
+
+
+def _reset_meeting_state(
+    state: ChatState,
+) -> ChatState:
+    return {
+        **state,
+        "meeting_email": None,
+        "meeting_purpose": None,
+        "meeting_ready_to_schedule": False,
+        "meeting_flow_active": False,
+        "meeting_requested_start": None,
+        "meeting_requested_end": None,
+        "meeting_candidate_slots": [],
+        "meeting_selected_slot": None,
+    }
+
+
+
 def route_after_understanding(state: ChatState) -> str:
     if not state.get("allowed"):
         return "refuse"
+
+    decision = state.get("meeting_flow_decision")
+
+    if decision == "cancel_scheduling":
+        return "refuse"
+
+    if decision == "switch_topic":
+        return "retrieve"
 
     if state.get("intent") == "meeting_confirmation":
         return "calendar_confirmation"
 
     if _has_active_meeting_flow(state):
+        if decision == "continue_scheduling":
+            return "calendar_scheduling"
+
         return "calendar_scheduling"
 
     if state.get("intent") == "meeting_availability":
@@ -164,6 +262,19 @@ def refuse_node(state: ChatState) -> ChatState:
         "I can only answer questions about Kutay's experience, projects, "
         "skills, education, availability, visa status, role fit, or meeting scheduling."
     )
+
+    if state.get("meeting_flow_decision") == "cancel_scheduling":
+        return {
+            **state,
+            "answer": (
+                "Understood — I've cancelled the meeting scheduling flow. "
+                "Feel free to ask anything else about Kutay."
+            ),
+            "stream_ready": False,
+            "intent": "meeting_scheduling",
+            "documents": [],
+            "meeting_flow_decision": "cancel_scheduling",
+        }
 
     reason = state.get("refusal_reason")
 

@@ -31,3 +31,5 @@ class ChatState(TypedDict):
 
     meeting_candidate_slots: NotRequired[list[dict]]
     meeting_selected_slot: NotRequired[dict | None]
+    meeting_flow_decision: NotRequired[str | None]
+    
