@@ -17,6 +17,7 @@ class Settings(BaseSettings):
     openai_embedding_model: str = "text-embedding-3-small"
 
     qdrant_url: str
+    qdrant_api_key: str
     qdrant_collection: str = "kutay_smart_cv"
 
     allowed_origins: str = "http://localhost:3000"

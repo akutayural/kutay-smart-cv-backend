@@ -6,4 +6,5 @@ settings = get_settings()
 
 qdrant_client = AsyncQdrantClient(
     url=settings.qdrant_url,
+    api_key=settings.qdrant_api_key,
 )

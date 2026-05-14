@@ -259,6 +259,7 @@ def main() -> None:
         documents=documents,
         embedding=embeddings,
         url=settings.qdrant_url,
+        api_key=settings.qdrant_api_key,
         collection_name=settings.qdrant_collection,
         force_recreate=True,
     )
