@@ -10,6 +10,8 @@ services:
       - qdrant
       - redis
     restart: unless-stopped
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
 
   qdrant:
     image: qdrant/qdrant:latest
