@@ -25,8 +25,15 @@ def _create_meeting_from_state(state: ChatState):
             "I have the meeting details, but I need a specific selected slot before scheduling. "
             "Please choose one of the suggested slots."
         )
-
-    service = CalendarService()
+    try:
+        service = CalendarService()
+    except Exception as e:
+        logger.exception(
+            "calendar_slots_failed",
+            error_type=type(e).__name__,
+            error=str(e),
+        )
+        return []
 
     result = service.create_meeting(
         CreateMeetingRequest(

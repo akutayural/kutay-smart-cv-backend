@@ -458,24 +458,77 @@ async def calendar_scheduling_node(state: ChatState) -> ChatState:
     requested_time_range = extracted.get("requested_time_range")
 
     if selected_slot is None and requested_start:
-        available_slots = await asyncio.to_thread(
-            get_available_slots,
-            _availability_days_for_requested_start(requested_start),
-            60,
-        )
+        try:
+            available_slots = await asyncio.to_thread(
+                get_available_slots,
+                _availability_days_for_requested_start(requested_start),
+                60,
+            )
 
-        exact_slot = _find_exact_requested_slot(
-            slots=available_slots,
-            requested_start=requested_start,
-        )
+            exact_slot = _find_exact_requested_slot(
+                slots=available_slots,
+                requested_start=requested_start,
+            )
 
-        if exact_slot:
-            selected_slot = exact_slot
-            candidate_slots = []
-            requested_start = exact_slot["start"]
-            requested_end = exact_slot["end"]
-        else:
-            answer = _build_exact_slot_unavailable_answer(requested_start)
+            if exact_slot:
+                selected_slot = exact_slot
+                candidate_slots = []
+                requested_start = exact_slot["start"]
+                requested_end = exact_slot["end"]
+            else:
+                answer = _build_exact_slot_unavailable_answer(requested_start)
+
+                return {
+                    **state,
+                    "documents": [],
+                    "meeting_flow_active": True,
+                    "meeting_email": meeting_email,
+                    "meeting_purpose": meeting_purpose,
+                    "meeting_requested_start": requested_start,
+                    "meeting_requested_end": requested_end,
+                    "meeting_candidate_slots": [],
+                    "meeting_selected_slot": None,
+                    "meeting_ready_to_schedule": False,
+                    "answer": answer,
+                    "stream_ready": False,
+                }
+        except Exception as exc:
+            logger.exception(
+                "calendar_availability_lookup_failed",
+                error_type=type(exc).__name__,
+                error=str(exc),
+            )
+
+            return {
+                **state,
+                "answer": (
+                    "I’m having trouble checking Kutay’s live calendar right now. "
+                    "Please try again later or contact Kutay directly."
+                ),
+                "stream_ready": False,
+                "meeting_flow_active": False,
+            }
+
+    if selected_slot is None and requested_day:
+        try:
+            available_slots = await asyncio.to_thread(
+                get_available_slots,
+                7,
+                60,
+            )
+
+            candidate_slots = _find_candidate_slots(
+                slots=available_slots,
+                requested_day=requested_day,
+                requested_time_range=requested_time_range,
+                limit=5,
+            )
+
+            answer = _build_candidate_slots_answer(
+                candidate_slots=candidate_slots,
+                requested_day=requested_day,
+                requested_time_range=requested_time_range,
+            )
 
             return {
                 **state,
@@ -483,97 +536,112 @@ async def calendar_scheduling_node(state: ChatState) -> ChatState:
                 "meeting_flow_active": True,
                 "meeting_email": meeting_email,
                 "meeting_purpose": meeting_purpose,
-                "meeting_requested_start": requested_start,
-                "meeting_requested_end": requested_end,
-                "meeting_candidate_slots": [],
+                "meeting_requested_start": None,
+                "meeting_requested_end": None,
+                "meeting_candidate_slots": candidate_slots,
                 "meeting_selected_slot": None,
                 "meeting_ready_to_schedule": False,
                 "answer": answer,
                 "stream_ready": False,
             }
+        except Exception as exc:
+            logger.exception(
+                "calendar_availability_lookup_failed",
+                error_type=type(exc).__name__,
+                error=str(exc),
+            )
 
-    if selected_slot is None and requested_day:
-        available_slots = await asyncio.to_thread(
-            get_available_slots,
-            7,
-            60,
-        )
-
-        candidate_slots = _find_candidate_slots(
-            slots=available_slots,
-            requested_day=requested_day,
-            requested_time_range=requested_time_range,
-            limit=5,
-        )
-
-        answer = _build_candidate_slots_answer(
-            candidate_slots=candidate_slots,
-            requested_day=requested_day,
-            requested_time_range=requested_time_range,
-        )
-
-        return {
-            **state,
-            "documents": [],
-            "meeting_flow_active": True,
-            "meeting_email": meeting_email,
-            "meeting_purpose": meeting_purpose,
-            "meeting_requested_start": None,
-            "meeting_requested_end": None,
-            "meeting_candidate_slots": candidate_slots,
-            "meeting_selected_slot": None,
-            "meeting_ready_to_schedule": False,
-            "answer": answer,
-            "stream_ready": False,
-        }
+            return {
+                **state,
+                "answer": (
+                    "I’m having trouble checking Kutay’s live calendar right now. "
+                    "Please try again later or contact Kutay directly."
+                ),
+                "stream_ready": False,
+                "meeting_flow_active": False,
+            }
 
     if selected_slot is None and extracted["asks_availability"]:
-        available_slots = await asyncio.to_thread(
-            get_available_slots,
-            7,
-            60,
-        )
+        try:
+            available_slots = await asyncio.to_thread(
+                get_available_slots,
+                7,
+                60,
+            )
 
-        answer = build_day_summary_answer(available_slots)
+            answer = build_day_summary_answer(available_slots)
 
-        return {
-            **state,
-            "documents": [],
-            "meeting_flow_active": True,
-            "meeting_email": meeting_email,
-            "meeting_purpose": meeting_purpose,
-            "meeting_requested_start": None,
-            "meeting_requested_end": None,
-            "meeting_candidate_slots": available_slots,
-            "meeting_selected_slot": None,
-            "meeting_ready_to_schedule": False,
-            "answer": answer,
-            "stream_ready": False,
-        }
+            return {
+                **state,
+                "documents": [],
+                "meeting_flow_active": True,
+                "meeting_email": meeting_email,
+                "meeting_purpose": meeting_purpose,
+                "meeting_requested_start": None,
+                "meeting_requested_end": None,
+                "meeting_candidate_slots": available_slots,
+                "meeting_selected_slot": None,
+                "meeting_ready_to_schedule": False,
+                "answer": answer,
+                "stream_ready": False,
+            }
+        except Exception as exc:
+            logger.exception(
+                "calendar_availability_lookup_failed",
+                error_type=type(exc).__name__,
+                error=str(exc),
+            )
+
+            return {
+                **state,
+                "answer": (
+                    "I’m having trouble checking Kutay’s live calendar right now. "
+                    "Please try again later or contact Kutay directly."
+                ),
+                "stream_ready": False,
+                "meeting_flow_active": False,
+            }
 
     if selected_slot is None:
-        available_slots = await asyncio.to_thread(
-            get_available_slots,
-            7,
-            60,
-        )
+        try:
+            available_slots = await asyncio.to_thread(
+                get_available_slots,
+                7,
+                60,
+            )
 
-        answer = build_day_summary_answer(available_slots)
+            answer = build_day_summary_answer(available_slots)
 
-        return {
-            **state,
-            "documents": [],
-            "meeting_flow_active": True,
-            "meeting_email": meeting_email,
-            "meeting_purpose": meeting_purpose,
-            "meeting_requested_start": None,
-            "meeting_requested_end": None,
-            "meeting_candidate_slots": available_slots,
-            "meeting_selected_slot": None,
-            "meeting_ready_to_schedule": False,
-            "answer": answer,
-            "stream_ready": False,
-        }
+            return {
+                **state,
+                "documents": [],
+                "meeting_flow_active": True,
+                "meeting_email": meeting_email,
+                "meeting_purpose": meeting_purpose,
+                "meeting_requested_start": None,
+                "meeting_requested_end": None,
+                "meeting_candidate_slots": available_slots,
+                "meeting_selected_slot": None,
+                "meeting_ready_to_schedule": False,
+                "answer": answer,
+                "stream_ready": False,
+            }
+        except Exception as exc:
+            logger.exception(
+                "calendar_availability_lookup_failed",
+                error_type=type(exc).__name__,
+                error=str(exc),
+            )
+
+            return {
+                **state,
+                "answer": (
+                    "I’m having trouble checking Kutay’s live calendar right now. "
+                    "Please try again later or contact Kutay directly."
+                ),
+                "stream_ready": False,
+                "meeting_flow_active": False,
+            }
 
     missing_fields = _missing_fields(
         meeting_email=meeting_email,

@@ -1,25 +1,37 @@
 ---
 document_type: experience
+category: professional_experience
+owner: ahmet-kutay-ural
+last_updated: 2026-05
+retrieval_priority: high
 
-domain:
+career_level:
+  - backend_engineer
+  - ai_engineer
+  - platform_engineer
+
+domains:
   - backend_engineering
   - fintech
-  - crm_systems
-  - hrtech
   - ai_engineering
-
-topics:
-  - payment_systems
-  - fraud_detection
-  - financial_workflows
+  - distributed_systems
   - realtime_systems
-  - event_processing
+  - payment_infrastructure
+  - fraud_detection
+  - hrtech
+  - crm_systems
+
+core_expertise:
   - backend_architecture
-  - fastapi
-  - spring_boot
-  - kafka
-  - redis
-  - kubernetes
+  - scalable_api_design
+  - distributed_systems
+  - retrieval_augmented_generation
+  - production_ai_systems
+  - realtime_event_processing
+  - financial_workflows
+  - platform_engineering
+  - observability
+  - system_reliability
 
 primary_stack:
   - python
@@ -27,77 +39,110 @@ primary_stack:
   - java
   - spring_boot
   - redis
+  - kafka
   - postgresql
   - mysql
-
-experience_level: senior_backend_engineer
-production_experience: true
+  - docker
+  - kubernetes
 
 industries:
   - fintech
+  - ai
   - crm
   - hrtech
 
-location:
+locations:
+  - london
   - united_kingdom
+  - istanbul
   - turkey
 
-last_updated: 2026-04-15
+employment_timeline:
+  current_company: Financial House Ltd
+  previous_companies:
+    - EVAM
+    - Han Group
+  total_professional_experience_since: 2020
+
+production_experience: true
+client_facing_systems: true
+high_scale_systems: true
+event_driven_architecture: true
+ai_systems_experience: true
 ---
 
-# Experience
+# Professional Experience
 
-## Financial House Ltd — Software Engineer (London)
+## Financial House Ltd — Backend Engineer (London, UK)
 
 ### Duration
-Mar 2023 – Present
+March 2023 – Present
+
+### Company Domain
+FinTech Infrastructure, Payments, Fraud Prevention, Financial Operations
 
 ### Overview
-Worked on production-grade white-label SaaS FinTech platforms including crypto ↔ fiat exchange systems, e-wallet applications, payment gateways, fraud prevention systems, and bank transfer infrastructures.
+Working on production-grade white-label FinTech platforms focused on payment infrastructure, crypto ↔ fiat exchange systems, e-wallet applications, fraud prevention systems, and merchant financial workflows.
 
-Focused primarily on backend engineering, financial transaction workflows, realtime APIs, fraud prevention systems, and operationally reliable financial infrastructure.
+Primary responsibilities include backend platform engineering, realtime transaction processing, fraud prevention workflows, operational reliability, and scalable financial backend systems.
 
-### Responsibilities
-- Built and maintained white-label SaaS FinTech products
-- Developed backend services and realtime APIs for hosted checkout systems, merchant/admin operational panels, KYC onboarding workflows, and financial transaction platforms
-- Implemented realtime transaction lifecycle workflows including PSP integrations, payment processing, IPN handling, crypto operations, settlement pipelines, and merchant risk management flows
-- Contributed to migration of a legacy Kotlin-based fraud detection system to FastAPI
-- Improved maintainability and enabled faster iteration for merchant-specific fraud prevention workflows
-- Reduced response times and database load through SQL optimisation, Redis-based caching strategies, batch-processing workflows, and backend performance improvements
-- Built forecasting pipelines using Facebook Prophet to predict daily bank deposit volumes from historical transaction data
+The role involves designing and maintaining backend services operating under high reliability and transaction integrity requirements within financial environments.
 
-### Scale
+### Key Responsibilities
+- Built and maintained backend services powering white-label SaaS financial platforms
+- Developed realtime APIs and operational backend systems for:
+  - hosted checkout systems
+  - merchant/admin operational panels
+  - KYC onboarding systems
+  - transaction lifecycle management
+  - payment and settlement workflows
+- Implemented PSP integrations, IPN handling pipelines, crypto transaction operations, merchant risk management flows, and settlement orchestration systems
+- Contributed to migration of a legacy Kotlin-based fraud detection infrastructure to FastAPI-based backend services
+- Improved maintainability and operational flexibility for merchant-specific fraud prevention workflows
+- Reduced backend latency and database load through:
+  - SQL optimisation
+  - Redis-based caching
+  - batch-processing strategies
+  - backend performance improvements
+- Developed forecasting pipelines using Facebook Prophet to predict daily bank deposit volumes from historical financial transaction data
+
+### Production Scale
 - Financial systems processing £1B+ annual transaction volume
-- Platforms processing 50M+ records
-- Production systems requiring high operational reliability and transaction integrity
+- Platforms operating on datasets exceeding 50M+ records
+- High-availability backend systems requiring strong operational reliability and transaction consistency
 
 ### Technologies
 Python, FastAPI, Redis, MySQL, PostgreSQL, Docker, Kubernetes, ArgoCD, AWS, SQS, S3, KMS, CloudWatch, New Relic, WebSocket
 
 ---
 
-## EVAM — Software Engineer (Istanbul)
+## EVAM — Software Engineer (Istanbul, Turkey)
 
 ### Duration
-Jan 2022 – Sep 2022
+January 2022 – September 2022
+
+### Company Domain
+Enterprise CRM, Customer Engagement, Realtime Communication Systems
 
 ### Overview
-Worked on enterprise CRM and customer engagement systems used for realtime customer communication, campaign management, and enterprise notification workflows.
+Worked on enterprise-scale CRM and customer engagement systems focused on realtime communication, notification orchestration, event-driven workflows, and customer interaction infrastructure.
 
-Developed backend services and customer-specific enterprise workflows within high-volume realtime event processing systems.
-### Responsibilities
+Contributed to backend engineering and customer-specific enterprise workflow systems operating within high-volume realtime event-processing environments.
+
+### Key Responsibilities
 - Developed backend services using Java and Spring Boot
-- Implemented enterprise customer workflows
-- Built realtime notification and messaging systems
-- Worked on high-volume event processing infrastructure
-- Developed customer-specific backend integrations and functionality
+- Built enterprise customer communication workflows
+- Developed realtime messaging and notification infrastructure
+- Worked on event-driven backend processing systems
+- Implemented customer-specific backend integrations and business workflows
+- Contributed to scalability and performance improvements across enterprise backend systems
 
-### Scale
-- Systems processing 1B+ events/records
+### Production Scale
+- Enterprise systems processing 1B+ events and records
 
 ### Achievements
-- Improved backend system performance by 30%
-- Contributed to engagement increases of 12%
+- Improved backend system performance by approximately 30%
+- Contributed to engagement improvements of 12%
 - Supported customer acquisition improvements of 15%
 
 ### Technologies
@@ -108,34 +153,70 @@ Java, Spring Boot, PostgreSQL, Kafka, Redis, Elasticsearch, Docker
 ## Han Group — Software Engineer
 
 ### Duration
-Jan 2021 – Jan 2022
+January 2021 – January 2022
+
+### Company Domain
+HRTech, Financial Operations, Workforce Platforms
 
 ### Overview
-Worked on backend systems for a HRTech and financial operations platform focused on part-time recruitment, payment workflows, and digital wallet/card operations.
+Worked on backend systems supporting HRTech and financial operations platforms focused on part-time recruitment workflows, digital wallet systems, and payment-related backend infrastructure.
 
-### Responsibilities
+### Key Responsibilities
 - Developed backend APIs using FastAPI
 - Implemented HR workflow automation systems
-- Built payment and wallet-related backend services
-- Developed employer and user management systems
+- Built wallet and payment-related backend services
+- Developed employer and workforce management systems
+- Contributed to backend platform reliability and operational workflows
 
 ### Technologies
 Python, FastAPI, PostgreSQL, Redis, Docker
 
 ---
 
-## Freelance Developer
+## Freelance Software Developer
 
 ### Duration
-Jan 2020 – Jan 2021
+January 2020 – January 2021
 
 ### Overview
-Worked on freelance software development projects involving mobile applications, e-commerce systems, and backend API development.
+Worked on freelance software engineering projects involving backend API development, mobile applications, e-commerce systems, and payment-related backend functionality.
 
-### Responsibilities
-- Developed backend APIs and business logic
+### Key Responsibilities
+- Developed backend APIs and business logic systems
 - Built cross-platform mobile applications
-- Worked on e-commerce and payment-related systems
+- Worked on e-commerce and payment-related workflows
+- Delivered client-specific software solutions across multiple domains
 
 ### Technologies
 Flutter, Python, FastAPI, Flask, Spring Boot
+
+---
+
+# Career Summary
+
+Ahmet Kutay Ural is a backend-focused software engineer specialising in:
+- backend platform engineering
+- distributed systems
+- production AI systems
+- retrieval-augmented generation (RAG)
+- realtime backend infrastructure
+- fintech systems
+- fraud prevention infrastructure
+- scalable API architecture
+
+His experience spans:
+- FinTech
+- AI systems
+- CRM platforms
+- HRTech systems
+- realtime event-driven architectures
+- production operational infrastructure
+
+He has worked extensively with:
+- Python/FastAPI ecosystems
+- Java/Spring Boot systems
+- distributed backend workflows
+- event-driven systems
+- observability tooling
+- AI-enabled backend architectures
+- production reliability engineering
